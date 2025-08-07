@@ -96,7 +96,7 @@
                     <label for="taxaSlider2" class="block text-lg font-medium text-gray-700 mb-2">
                         Taxa de Juros (i): <span id="taxaValue2" class="font-bold text-purple-600">4%</span>
                     </label>
-                    <input type="range" id="taxaSlider2" min="1" max="5" value="4" class="range-slider accent-purple-500">
+                    <input type="range" id="taxaSlider2" min="0.5" max="5" value="4" step="0.5" class="range-slider accent-purple-500">
                 </div>
 
                 <!-- Slider para o Tempo 2 -->
@@ -326,9 +326,9 @@
             if (isNaN(principal2) || principal2 <= 0) principalInput2.value = 1200;
 
             // Atualizar valores exibidos
-            taxaValueSpan1.textContent = `${(taxa1 * 100).toFixed(0)}%`;
+            taxaValueSpan1.textContent = `${(taxa1 * 100).toFixed(1)}%`;
             tempoValueSpan1.textContent = tempo1;
-            taxaValueSpan2.textContent = `${(taxa2 * 100).toFixed(0)}%`;
+            taxaValueSpan2.textContent = `${(taxa2 * 100).toFixed(1)}%`;
             tempoValueSpan2.textContent = tempo2;
 
             // Calcular e atualizar o Cenário 1
