@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Juros Compostos</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #d1d5db;
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: .2s;
+            transition: opacity .2s;
+            border-radius: 4px;
+        }
+        .range-slider:hover {
+            opacity: 1;
+        }
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+        .range-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-6 md:p-10 rounded-xl shadow-2xl w-full max-w-5xl mx-auto">
+        <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Comparador de Juros Compostos</h1>
+        
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+            <!-- Controles do Cenário 1 -->
+            <div class="bg-blue-50 p-6 rounded-xl shadow-inner">
+                <h2 class="text-xl font-bold text-blue-800 mb-4">Cenário 1</h2>
+                <!-- Input para o Capital Inicial 1 -->
+                <div class="mb-4">
+                    <label for="principalInput1" class="block text-lg font-medium text-gray-700 mb-2">
+                        Capital Inicial (R$):
+                    </label>
+                    <input type="number" id="principalInput1" value="1000" step="1" class="w-full p-2 border-2 border-gray-300 rounded-md focus:outline-none focus:border-blue-500 transition duration-200">
+                </div>
+
+                <!-- Slider para a Taxa de Juros 1 -->
+                <div class="mb-4">
+                    <label for="taxaSlider1" class="block text-lg font-medium text-gray-700 mb-2">
+                        Taxa de Juros (i): <span id="taxaValue1" class="font-bold text-blue-600">3%</span>
+                    </label>
+                    <input type="range" id="taxaSlider1" min="1" max="5" value="3" class="range-slider accent-blue-500">
+                </div>
+
+                <!-- Slider para o Tempo 1 -->
+                <div>
+                    <label for="tempoSlider1" class="block text-lg font-medium text-gray-700 mb-2">
+                        Tempo (t) em meses: <span id="tempoValue1" class="font-bold text-blue-600">6</span>
+                    </label>
+                    <input type="range" id="tempoSlider1" min="1" max="24" value="6" class="range-slider accent-blue-500">
+                </div>
+            </div>
+
+            <!-- Controles do Cenário 2 -->
+            <div class="bg-purple-50 p-6 rounded-xl shadow-inner">
+                <h2 class="text-xl font-bold text-purple-800 mb-4">Cenário 2</h2>
+                <!-- Input para o Capital Inicial 2 -->
+                <div class="mb-4">
+                    <label for="principalInput2" class="block text-lg font-medium text-gray-700 mb-2">
+                        Capital Inicial (R$):
+                    </label>
+                    <input type="number" id="principalInput2" value="1200" step="1" class="w-full p-2 border-2 border-gray-300 rounded-md focus:outline-none focus:border-purple-500 transition duration-200">
+                </div>
+
+                <!-- Slider para a Taxa de Juros 2 -->
+                <div class="mb-4">
+                    <label for="taxaSlider2" class="block text-lg font-medium text-gray-700 mb-2">
+                        Taxa de Juros (i): <span id="taxaValue2" class="font-bold text-purple-600">4%</span>
+                    </label>
+                    <input type="range" id="taxaSlider2" min="1" max="5" value="4" class="range-slider accent-purple-500">
+                </div>
+
+                <!-- Slider para o Tempo 2 -->
+                <div>
+                    <label for="tempoSlider2" class="block text-lg font-medium text-gray-700 mb-2">
+                        Tempo (t) em meses: <span id="tempoValue2" class="font-bold text-purple-600">8</span>
+                    </label>
+                    <input type="range" id="tempoSlider2" min="1" max="24" value="8" class="range-slider accent-purple-500">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Canvas para o gráfico -->
+        <div class="mb-8">
+            <canvas id="jurosChart"></canvas>
+        </div>
+
+        <!-- Detalhes e resumo -->
+        <div class="mt-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Resumo e Detalhes</h2>
+            <div class="grid md:grid-cols-2 gap-4 mb-6">
+                <!-- Resumo do Cenário 1 -->
+                <div class="bg-blue-100 p-4 rounded-lg shadow-inner">
+                    <h3 class="text-xl font-bold text-blue-800 mb-2">Resumo Cenário 1</h3>
+                    <p class="text-lg text-gray-700 font-bold mb-1">Montante Final: <span id="montanteFinal1" class="text-green-600"></span></p>
+                    <p class="text-lg text-gray-700 font-bold">Juros Totais: <span id="jurosTotais1" class="text-green-600"></span></p>
+                </div>
+                <!-- Resumo do Cenário 2 -->
+                <div class="bg-purple-100 p-4 rounded-lg shadow-inner">
+                    <h3 class="text-xl font-bold text-purple-800 mb-2">Resumo Cenário 2</h3>
+                    <p class="text-lg text-gray-700 font-bold mb-1">Montante Final: <span id="montanteFinal2" class="text-green-600"></span></p>
+                    <p class="text-lg text-gray-700 font-bold">Juros Totais: <span id="jurosTotais2" class="text-green-600"></span></p>
+                </div>
+            </div>
+
+            <!-- Tabelas de Variação Mês a Mês -->
+            <div class="grid md:grid-cols-2 gap-4">
+                <!-- Tabela do Cenário 1 -->
+                <div>
+                    <h3 class="text-xl font-semibold text-blue-700 mb-2">Variação Mês a Mês (Cenário 1)</h3>
+                    <div class="overflow-x-auto rounded-lg shadow-md">
+                        <table class="w-full text-sm md:text-base text-left text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">Mês</th>
+                                    <th scope="col" class="px-6 py-3">Montante Final</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detalhesTableBody1">
+                                <!-- Linhas da tabela serão inseridas aqui via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Tabela do Cenário 2 -->
+                <div>
+                    <h3 class="text-xl font-semibold text-purple-700 mb-2">Variação Mês a Mês (Cenário 2)</h3>
+                    <div class="overflow-x-auto rounded-lg shadow-md">
+                        <table class="w-full text-sm md:text-base text-left text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">Mês</th>
+                                    <th scope="col" class="px-6 py-3">Montante Final</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detalhesTableBody2">
+                                <!-- Linhas da tabela serão inseridas aqui via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Mapeamento dos elementos HTML para o Cenário 1
+        const principalInput1 = document.getElementById('principalInput1');
+        const taxaSlider1 = document.getElementById('taxaSlider1');
+        const tempoSlider1 = document.getElementById('tempoSlider1');
+        const taxaValueSpan1 = document.getElementById('taxaValue1');
+        const tempoValueSpan1 = document.getElementById('tempoValue1');
+        const montanteFinalSpan1 = document.getElementById('montanteFinal1');
+        const jurosTotaisSpan1 = document.getElementById('jurosTotais1');
+        const detalhesTableBody1 = document.getElementById('detalhesTableBody1');
+
+        // Mapeamento dos elementos HTML para o Cenário 2
+        const principalInput2 = document.getElementById('principalInput2');
+        const taxaSlider2 = document.getElementById('taxaSlider2');
+        const tempoSlider2 = document.getElementById('tempoSlider2');
+        const taxaValueSpan2 = document.getElementById('taxaValue2');
+        const tempoValueSpan2 = document.getElementById('tempoValue2');
+        const montanteFinalSpan2 = document.getElementById('montanteFinal2');
+        const jurosTotaisSpan2 = document.getElementById('jurosTotais2');
+        const detalhesTableBody2 = document.getElementById('detalhesTableBody2');
+
+        const ctx = document.getElementById('jurosChart').getContext('2d');
+
+        // Configuração inicial do gráfico
+        let myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Cenário 1',
+                    data: [],
+                    borderColor: 'rgb(59, 130, 246)', // blue-500
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    fill: false,
+                    tension: 0.4
+                },
+                {
+                    label: 'Cenário 2',
+                    data: [],
+                    borderColor: 'rgb(168, 85, 247)', // purple-500
+                    backgroundColor: 'rgba(168, 85, 247, 0.2)',
+                    fill: false,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Tempo (meses)',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Montante (R$)',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        },
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Montante: R$ ${context.parsed.y.toFixed(2).replace('.', ',')}`;
+                            },
+                            title: function(context) {
+                                return `Mês ${context[0].parsed.x}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Função para formatar o número como moeda brasileira
+        function formatCurrency(value) {
+            return `R$ ${value.toFixed(2).replace('.', ',')}`;
+        }
+
+        // Função para calcular e popular os dados de um cenário
+        function calculateScenario(principal, taxa, tempo, tableBody, dataSetIndex) {
+            const labels = [];
+            const data = [];
+            let montanteFinal = principal;
+            let totalJurosGanhos = 0;
+
+            // Limpar a tabela antes de popular
+            tableBody.innerHTML = '';
+
+            if (principal > 0 && tempo > 0) {
+                for (let t = 1; t <= tempo; t++) {
+                    const capitalInicioMes = principal * Math.pow(1 + taxa, t - 1);
+                    const montanteFimMes = principal * Math.pow(1 + taxa, t);
+                    const jurosGanhos = montanteFimMes - capitalInicioMes;
+
+                    // Adicionar dados para o gráfico
+                    labels.push(t);
+                    data.push(montanteFimMes);
+
+                    // Criar linha da tabela
+                    const row = document.createElement('tr');
+                    row.className = `bg-white border-b hover:bg-gray-50`;
+                    row.innerHTML = `
+                        <td class="px-6 py-4 font-bold text-gray-900">${t}</td>
+                        <td class="px-6 py-4 font-bold">${formatCurrency(montanteFimMes)}</td>
+                    `;
+                    tableBody.appendChild(row);
+                    
+                    montanteFinal = montanteFimMes;
+                    totalJurosGanhos += jurosGanhos;
+                }
+            }
+
+            // Atualizar os dados do gráfico
+            myChart.data.labels = labels;
+            myChart.data.datasets[dataSetIndex].data = data;
+            
+            return { montanteFinal, totalJurosGanhos };
+        }
+
+        // Função principal para atualizar tudo
+        function updateAll() {
+            // Obter valores do Cenário 1
+            const principal1 = parseFloat(principalInput1.value);
+            const taxa1 = parseFloat(taxaSlider1.value) / 100;
+            const tempo1 = parseInt(tempoSlider1.value);
+
+            // Obter valores do Cenário 2
+            const principal2 = parseFloat(principalInput2.value);
+            const taxa2 = parseFloat(taxaSlider2.value) / 100;
+            const tempo2 = parseInt(tempoSlider2.value);
+            
+            // Validar inputs
+            if (isNaN(principal1) || principal1 <= 0) principalInput1.value = 1000;
+            if (isNaN(principal2) || principal2 <= 0) principalInput2.value = 1200;
+
+            // Atualizar valores exibidos
+            taxaValueSpan1.textContent = `${(taxa1 * 100).toFixed(0)}%`;
+            tempoValueSpan1.textContent = tempo1;
+            taxaValueSpan2.textContent = `${(taxa2 * 100).toFixed(0)}%`;
+            tempoValueSpan2.textContent = tempo2;
+
+            // Calcular e atualizar o Cenário 1
+            const result1 = calculateScenario(parseFloat(principalInput1.value), taxa1, tempo1, detalhesTableBody1, 0);
+            montanteFinalSpan1.textContent = formatCurrency(result1.montanteFinal);
+            jurosTotaisSpan1.textContent = formatCurrency(result1.totalJurosGanhos);
+
+            // Calcular e atualizar o Cenário 2
+            const result2 = calculateScenario(parseFloat(principalInput2.value), taxa2, tempo2, detalhesTableBody2, 1);
+            montanteFinalSpan2.textContent = formatCurrency(result2.montanteFinal);
+            jurosTotaisSpan2.textContent = formatCurrency(result2.totalJurosGanhos);
+
+            // Atualizar o gráfico
+            myChart.update();
+        }
+
+        // Adicionar listeners para todos os inputs e sliders
+        principalInput1.addEventListener('input', updateAll);
+        taxaSlider1.addEventListener('input', updateAll);
+        tempoSlider1.addEventListener('input', updateAll);
+        principalInput2.addEventListener('input', updateAll);
+        taxaSlider2.addEventListener('input', updateAll);
+        tempoSlider2.addEventListener('input', updateAll);
+
+        // Chamar a função de atualização inicial
+        window.onload = updateAll;
+    </script>
+</body>
+</html>
